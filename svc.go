@@ -2,10 +2,13 @@ package autonat
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/crypto"
+	cryptopb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/helpers"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -17,6 +20,7 @@ import (
 	autonat "github.com/libp2p/go-libp2p-autonat"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
+	"github.com/multiformats/go-varint"
 )
 
 const P_CIRCUIT = 290
@@ -36,6 +40,10 @@ type AutoNATService struct {
 	// rate limiter
 	mx   sync.Mutex
 	reqs map[peer.ID]int
+
+	// for the identity certificate
+	cpk *cryptopb.PublicKey
+	sk  crypto.PrivKey
 }
 
 // NewAutoNATService creates a new AutoNATService instance attached to a host
@@ -52,6 +60,16 @@ func NewAutoNATService(ctx context.Context, h host.Host, opts ...libp2p.Option) 
 		reqs:   make(map[peer.ID]int),
 	}
 	h.SetStreamHandler(autonat.AutoNATProto, as.handleStream)
+
+	// keys for the identity certificate
+	pk := dialer.Peerstore().PubKey(dialer.ID())
+	sk := dialer.Peerstore().PrivKey(dialer.ID())
+	cpk, err := crypto.PublicKeyToProto(pk)
+	if err != nil {
+		return nil, fmt.Errorf("failed to transform public key to proto,err=%s", err)
+	}
+	as.cpk = cpk
+	as.sk = sk
 
 	go as.resetRateLimiter()
 
@@ -87,6 +105,17 @@ func (as *AutoNATService) handleStream(s network.Stream) {
 	dr := as.handleDial(pid, s.Conn().RemoteMultiaddr(), req.GetDial().GetPeer())
 	res.Type = pb.Message_DIAL_RESPONSE.Enum()
 	res.DialResponse = dr
+
+	// add an identity certificate
+	dr.DialerIdentityCertificate = new(pb.Message_DialerIdentityCertificate)
+	dr.DialerIdentityCertificate.PublicKey = as.cpk
+	sgn, err := as.sk.Sign(varint.ToUvarint(*req.Dial.Nonce))
+	if err != nil {
+		log.Infof("failed to sign nonce %d sent by client, err=%s", *req.Dial.Nonce, err)
+		s.Reset()
+		return
+	}
+	dr.DialerIdentityCertificate.Signature = sgn
 
 	err = w.WriteMsg(&res)
 	if err != nil {
