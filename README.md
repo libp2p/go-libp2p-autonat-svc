@@ -8,7 +8,9 @@
 
 > AutoNAT service implementation
 
-This package provides an implementation of the AutoNATService; see [autonat](https://github.com/libp2p/go-libp2p-autonat).
+## Deprecated
+
+This repository is now subsumed within the [autonat](https://github.com/libp2p/go-libp2p-autonat) repo.
 
 ## Documentation
 
@@ -16,7 +18,7 @@ See https://godoc.org/github.com/libp2p/go-libp2p-autonat-svc.
 
 ## Contribute
 
-Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/go-libp2p-discovery/issues)!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/go-libp2p-autonat/issues)!
 
 This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 

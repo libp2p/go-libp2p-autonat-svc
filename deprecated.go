@@ -28,25 +28,32 @@ const P_CIRCUIT = 290
 var (
 	// AutoNATServiceDialTimeout defines how long to wait for connection
 	// attempts before failing.
+	// Deprecated - use autonat.config.requestTimeout
 	AutoNATServiceDialTimeout = 15 * time.Second
 	// AutoNATServiceResetInterval defines how often to reset throttling.
+	// Deprecated - use autonat.WithSchedule
 	AutoNATServiceResetInterval = 1 * time.Minute
 	// AutoNATServiceResetJitter defines the amplitude of randomness in throttle
 	// reset timing.
+	// Deprecated - use autonat.WithSchedule
 	AutoNATServiceResetJitter = 15 * time.Second
 
 	// AutoNATServiceThrottle defines how many times each ResetInterval a peer
 	// can ask for its autonat address.
+	// Deprecated - use autonat.WithPeerThrottling
 	AutoNATServiceThrottle = 3
 	// AutoNATGlobalThrottle defines how many total autonat requests this
 	// service will answer each ResetInterval.
+	// Deprecated - use autonat.WithThrottling
 	AutoNATGlobalThrottle = 30
 	// AutoNATMaxPeerAddresses defines maximum number of addreses the autonat
 	// service will consider when attempting to connect to the peer.
+	// Deprecated - use autonat.config.maxPeerAddresses
 	AutoNATMaxPeerAddresses = 16
 )
 
 // AutoNATService provides NAT autodetection services to other peers
+// Deprecated - use autonat.EnableService
 type AutoNATService struct {
 	ctx    context.Context
 	h      host.Host
@@ -60,6 +67,7 @@ type AutoNATService struct {
 }
 
 // NewAutoNATService creates a new AutoNATService instance attached to a host
+// Deprecated - use autonat.EnableService
 func NewAutoNATService(ctx context.Context, h host.Host, forceEnabled bool, opts ...libp2p.Option) (*AutoNATService, error) {
 	opts = append(opts, libp2p.NoListenAddrs)
 	dialer, err := libp2p.New(ctx, opts...)
