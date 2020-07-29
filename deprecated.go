@@ -17,8 +17,8 @@ import (
 
 	pb "github.com/libp2p/go-libp2p-autonat/pb"
 
-	ggio "github.com/gogo/protobuf/io"
 	autonat "github.com/libp2p/go-libp2p-autonat"
+	"github.com/libp2p/go-msgio/protoio"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
 )
@@ -100,8 +100,8 @@ func (as *AutoNATService) handleStream(s network.Stream) {
 	pid := s.Conn().RemotePeer()
 	log.Debugf("New stream from %s", pid.Pretty())
 
-	r := ggio.NewDelimitedReader(s, network.MessageSizeMax)
-	w := ggio.NewDelimitedWriter(s)
+	r := protoio.NewDelimitedReader(s, network.MessageSizeMax)
+	w := protoio.NewDelimitedWriter(s)
 
 	var req pb.Message
 	var res pb.Message
